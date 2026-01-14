@@ -1,0 +1,213 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赛博骰子 | CYBER DICE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 动态霓虹网格背景 -->
+    <div class="cyber-grid"></div>
+    <!-- 扫描线效果 -->
+    <div class="scanlines"></div>
+    <!-- 烟花Canvas -->
+    <canvas id="fireworksCanvas"></canvas>
+    
+    <!-- 胜利/失败 全屏覆盖层 -->
+    <div id="gameOverlay" class="game-overlay">
+        <div id="overlayContent" class="overlay-content"></div>
+    </div>
+
+    <!-- ========== 顶部极简信息栏 ========== -->
+    <header class="top-bar">
+        <div class="top-bar-content">
+            <div class="logo-section">
+                <h1 class="cyber-title" data-text="赛博骰子">赛博骰子</h1>
+                <span class="eth-badge">ETH</span>
+            </div>
+            <div class="wallet-info">
+                <div class="balance-display">
+                    <span class="balance-label">余额</span>
+                    <span id="walletBalance" class="balance-value">-- ETH</span>
+                </div>
+                <button id="connectWalletBtn" class="cyber-btn">
+                    <span class="btn-text">连接钱包</span>
+                    <span class="btn-glitch"></span>
+                </button>
+                <div class="wallet-status-wrapper">
+                    <p id="walletStatus" class="status-text">未连接</p>
+                    <p id="networkStatus" class="network-text">Sepolia</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========== 核心游戏区（占70%高度，视觉焦点） ========== -->
+    <main class="core-game-area">
+        <div class="glass-container">
+            <!-- 双层霓虹边框装饰 -->
+            <div class="neon-border-outer"></div>
+            <div class="neon-border-inner"></div>
+            
+            <!-- 上半区：投注设置 -->
+            <section class="betting-section">
+                <h2 class="section-title">
+                    <span class="title-icon"></span>
+                    投注设置
+                    <span class="title-icon"></span>
+                </h2>
+                <div class="bet-controls">
+                    <div class="input-group">
+                        <label class="cyber-label">投注金额 (wei)</label>
+                        <div class="cyber-input-wrapper">
+                            <input type="number" id="betAmount" class="cyber-input" step="1" min="1" placeholder="输入金额">
+                            <span class="input-glow"></span>
+                            <span class="input-cursor"></span>
+                        </div>
+                    </div>
+                    <div class="bet-type-group">
+                        <label class="cyber-label">选择类型</label>
+                        <div class="dice-container bet-buttons">
+                            <!-- 小 (1-3) -->
+                            <div class="dice dice-select dice-small" data-type="0">
+                                <div class="dice-face face-1 text-face"><div>小<br><span>(1-3)</span></div></div>
+                                <div class="dice-face face-2"><span class="pip"></span><span class="pip"></span></div>
+                                <div class="dice-face face-3"><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+                                <div class="dice-face face-4"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+                                <div class="dice-face face-5"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+                                <div class="dice-face face-6"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+                            </div>
+                            <!-- 大 (4-6) -->
+                            <div class="dice dice-select dice-big" data-type="1">
+                                <div class="dice-face face-1 text-face"><div>大<br><span>(4-6)</span></div></div>
+                                <div class="dice-face face-2"><span class="pip"></span><span class="pip"></span></div>
+                                <div class="dice-face face-3"><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+                                <div class="dice-face face-4"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+                                <div class="dice-face face-5"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+                                <div class="dice-face face-6"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button id="placeBetBtn" class="cyber-btn confirm-btn" disabled>
+                    <span class="btn-text">确 认 投 注</span>
+                    <span class="btn-glitch"></span>
+                </button>
+                <p id="betStatus" class="status-message"></p>
+            </section>
+
+            <!-- 霓虹渐变分割线 -->
+            <div class="neon-divider"></div>
+
+            <!-- 中间区：3D骰子动画展示区（占50%面积） -->
+            <section class="dice-arena">
+                <div class="dice-stage">
+                    <div class="dice dice-result" id="resultDice">
+                        <div class="dice-face face-1"><span class="pip"></span></div>
+                        <div class="dice-face face-2"><span class="pip"></span><span class="pip"></span></div>
+                        <div class="dice-face face-3"><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+                        <div class="dice-face face-4"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+                        <div class="dice-face face-5"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+                        <div class="dice-face face-6"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+                    </div>
+                </div>
+                <!-- 光环装饰 -->
+                <div class="dice-glow-ring"></div>
+                <div class="dice-glow-ring ring-2"></div>
+            </section>
+
+            <!-- 霓虹渐变分割线 -->
+            <div class="neon-divider"></div>
+
+            <!-- 下半区：结果展示 -->
+            <section class="result-section">
+                <h2 class="section-title">
+                    <span class="title-icon"></span>
+                    本局结果
+                    <span class="title-icon"></span>
+                </h2>
+                <div class="result-display">
+                    <div class="result-item">
+                        <span class="result-label">骰子点数</span>
+                        <span id="diceNumber" class="result-value neon-text">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">投注结果</span>
+                        <span id="betResult" class="result-value">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">奖励 (wei)</span>
+                        <span id="payoutAmount" class="result-value neon-text">-</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- ========== 底部窄辅助栏 ========== -->
+    <footer class="bottom-bar">
+        <div class="bottom-content">
+            <!-- 玩家战绩 -->
+            <div class="stats-panel">
+                <h3 class="panel-title">🎮 我的战绩</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">总局数</span>
+                        <span id="totalGames" class="stat-value">0</span>
+                        <span class="stat-unit">局</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">胜利</span>
+                        <span id="winGames" class="stat-value">0</span>
+                        <span class="stat-unit">局</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">胜率</span>
+                        <span id="winRate" class="stat-value">0%</span>
+                        <span class="stat-unit"></span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">总投注</span>
+                        <span id="totalBet" class="stat-value">0</span>
+                        <span class="stat-unit">wei</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">总赢取</span>
+                        <span id="totalWin" class="stat-value">0</span>
+                        <span class="stat-unit">wei</span>
+                    </div>
+                </div>
+                <button id="refreshStatsBtn" class="cyber-btn-sm">🔄 刷新战绩</button>
+            </div>
+
+            <!-- 游戏记录 -->
+            <div class="records-panel">
+                <h3 class="panel-title">📜 游戏记录</h3>
+                <div class="records-controls">
+                    <div class="control-group">
+                        <label class="control-label" for="pageNum">页码</label>
+                        <input type="number" id="pageNum" class="cyber-input-sm" value="1" min="1">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="pageSize">条数</label>
+                        <input type="number" id="pageSize" class="cyber-input-sm" value="10" min="1" max="100">
+                    </div>
+                    <button id="loadRecordsBtn" class="cyber-btn-sm">📖 加载记录</button>
+                </div>
+                <div id="recordsList" class="records-list"></div>
+            </div>
+
+            <!-- 排行榜 -->
+            <div class="ranking-panel">
+                <h3 class="panel-title">🏆 排行榜 TOP 10</h3>
+                <button id="loadRankingBtn" class="cyber-btn-sm">👑 加载排行</button>
+                <div id="rankingList" class="ranking-list"></div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="web3.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
